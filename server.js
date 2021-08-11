@@ -1,4 +1,6 @@
 const express = require('express');
+const fs = require('fs');
+const { fstat } = require('fs');
 const path = require('path');
 const PORT = process.env.port || 3001;
 const app = express();
@@ -35,7 +37,7 @@ app.post('/api/notes', (req, res) => {
             text,
         };
 
-        // Variable holding response
+        // Create response variable to inform user/server
         const response = {
             status: 'success',
             body: newNote,
@@ -43,11 +45,31 @@ app.post('/api/notes', (req, res) => {
 
         console.log(response);
         res.json(response);
-        
-    } else {
-        res.json('Error when posting note')
-    }
 
+        // If all went well, obtain db.json and write new note to it
+        fs.readFile('./db/db.json', 'utf8', (err, data) => {
+            if (err) {
+                console.error(err);
+            } else {
+                // Convert file into a string
+                const allNotes = JSON.parse(data);
+
+                // Add the new note to the file
+                allNotes.push(newNote);
+
+                // Write it back to the file
+                fs.writeFile('./db/db.json', JSON.stringify(allNotes, null, 4),
+
+                    // If error occurs while writing, log it
+                    (writeErr) => writeErr ? console.error(writeErr) : console.info('Successfully updated notes!')
+                )
+            }
+        });
+
+        // If title and text weren't entered
+    } else {
+        res.json('Error in posting review');
+    }
 });
 
 app.listen(PORT, () =>
