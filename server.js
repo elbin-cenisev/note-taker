@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const util = require('util');
-const { readFromFile, readAndDelete } = require('./helpers/fsUtils')
+const { readFromFile, readAndAppend, readAndDelete } = require('./helpers/fsUtils')
 const uuid = require('./helpers/uuid')
 const path = require('path');
 const PORT = process.env.port || 3001;
@@ -42,7 +42,6 @@ app.post('/api/notes', (req, res) => {
             id: uuid(),
         };
 
-        // Create response variable to inform user/server
         const response = {
             status: 'success',
             body: newNote,
@@ -51,25 +50,8 @@ app.post('/api/notes', (req, res) => {
         console.log(response);
         res.json(response);
 
-        // If all went well, obtain db.json and write new note to it
-        fs.readFile('./db/db.json', 'utf8', (err, data) => {
-            if (err) {
-                console.error(err);
-            } else {
-                // Convert file into a string
-                const allNotes = JSON.parse(data);
-
-                // Add the new note to the file
-                allNotes.push(newNote);
-
-                // Write it back to the file
-                fs.writeFile('./db/db.json', JSON.stringify(allNotes, null, 4),
-
-                    // If error occurs while writing, log it
-                    (writeErr) => writeErr ? console.error(writeErr) : console.info('Successfully updated notes!')
-                )
-            }
-        });
+        // Append new note to db.json
+        readAndAppend(newNote, './db/db.json');
 
         // If title and text weren't entered
     } else {
@@ -77,8 +59,11 @@ app.post('/api/notes', (req, res) => {
     }
 });
 
+
+// DELETE route to delete note at given id
 app.delete('/api/notes/:id', (req, res) => {
-    readAndDelete(req.params.id, './db/db.json')
+    readAndDelete(req.params.id, './db/db.json');
+    res.json(req.params.id);
 });
 
 app.listen(PORT, () =>

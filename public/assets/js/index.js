@@ -106,7 +106,6 @@ const handleNoteView = (e) => {
     activeNote = JSON.parse(e.target.getAttribute('data-note'));
   }
 
-  console.log(activeNote);
   renderActiveNote();
 };
 
