@@ -1,10 +1,12 @@
 const express = require('express');
 const fs = require('fs');
-const { fstat } = require('fs');
+const util = require('util');
+const { readFromFile, readAndDelete } = require('./helpers/fsUtils')
+const uuid = require('./helpers/uuid')
 const path = require('path');
 const PORT = process.env.port || 3001;
 const app = express();
-const noteFile = require('./db/db.json');
+const noteFile = './db/db.json'
 
 // Middleware
 app.use(express.json());
@@ -21,13 +23,15 @@ app.get('/notes', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/notes.html'))
 );
 
-// GET route for db.json file
-app.get('/api/notes', (req, res) => res.json(noteFile));
+// GET route for retrieving every note
+app.get('/api/notes', (req, res) =>
+    readFromFile('./db/db.json').then((data) => res.json(JSON.parse(data)))
+);
 
-// POST route for db.json file
+// POST route for submitting notes 
 app.post('/api/notes', (req, res) => {
     // Destructure request 
-    const { title, text } = req.body;
+    const { title, text, id } = req.body;
 
     // If destructuring was success
     if (title && text) {
@@ -35,6 +39,7 @@ app.post('/api/notes', (req, res) => {
         const newNote = {
             title,
             text,
+            id: uuid(),
         };
 
         // Create response variable to inform user/server
@@ -68,8 +73,12 @@ app.post('/api/notes', (req, res) => {
 
         // If title and text weren't entered
     } else {
-        res.json('Error in posting review');
+        res.json('Error in posting note');
     }
+});
+
+app.delete('/api/notes/:id', (req, res) => {
+    readAndDelete(req.params.id, './db/db.json')
 });
 
 app.listen(PORT, () =>
