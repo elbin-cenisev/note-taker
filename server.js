@@ -4,9 +4,8 @@ const util = require('util');
 const { readFromFile, readAndAppend, readAndDelete } = require('./helpers/fsUtils')
 const uuid = require('./helpers/uuid')
 const path = require('path');
-const PORT = process.env.port || 3001;
+const PORT = process.env.PORT || 3001;
 const app = express();
-const noteFile = './db/db.json'
 
 // Middleware
 app.use(express.json());
@@ -66,6 +65,6 @@ app.delete('/api/notes/:id', (req, res) => {
     res.json(req.params.id);
 });
 
-app.listen(PORT, () =>
-    console.log(`App listening at http://localhost:${PORT} 🚀`)
+app.listen(process.env.PORT || 3001, () =>
+    console.log(`App listening at some port! 🚀`)
 );
