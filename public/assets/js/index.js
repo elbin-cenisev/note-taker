@@ -191,5 +191,3 @@ if (window.location.pathname === '/notes') {
 }
 
 getAndRenderNotes();
-
-// Commit 6
